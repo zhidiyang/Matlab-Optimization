@@ -5,12 +5,16 @@ function [success, state] = mainNavigation(x,y,v,delta0,phi0,ks,graph)
    %send to the steering motor so that the bicycle follows the path and
    %stays balanced
    
-   %define physical parameters:
-   p.g = 9.81; %m/s^2 %gravitational constant
-   p.l = 0.935; %m %distance between front and rear wheel ground contact point %p.b=0.5; p.h=0.5;
-   p.b = 0.3;  %m %distance from ground contact point of rear wheel (C) to center of mass (G) projected onto the ground
-   p.h = 0.5156;  %m %height of the bicycle center of mass  %<----Arundathi did not write this, she trusts what we got (h = 0.5165)
-   p.c = 0;    %m %initial position of rear wheel (?) % Trail. trail is 0
+   %%x,y waypoint vector
+   %v = speed is constant
+   %delta initial steer
+   %phi0  initial lean angle
+   %graph: 1 = make graph
+   
+   %define parameters
+   p.g = 9.81; p.l = 1.02; %length of wheel base %p.b=0.5; p.h=0.5;
+   p.b = 0.3; p.h = 0.5; %h = height to COM, %b=??
+   p.c = 0;   %trail is 0
    
    %gains
    p.k1 = ks(1);
@@ -18,12 +22,13 @@ function [success, state] = mainNavigation(x,y,v,delta0,phi0,ks,graph)
    p.k3 = ks(3);
    %k3 should have a different sign from other two gains.
    
-   p.timestep = 1/60;
-   p.pause = p.timestep;
+   p.timestep = 1/60; %seconds
+   p.pause = p.timestep; %pause for simulation, should not for gains opt
     
    %assume that we start out in the first segment
+   %nav algorithm stuff
    tstep=p.timestep;
-   tarray=[];
+   tarray=[]; %store time at each timestep
    currentSegment=1;
    xC=x(currentSegment); yC=y(currentSegment); xD=x(currentSegment+1); yD=y(currentSegment+1);
    
@@ -36,18 +41,17 @@ function [success, state] = mainNavigation(x,y,v,delta0,phi0,ks,graph)
    %get information from sensors about state of bicycle
    xB=0;             %xB and yB represent the current position of the bike
    yB=0;
-   thetaB = 0;       %thetaB=pi/8; xB,yB,thetaB taken from GPS data
+   thetaB = 0;       %thetaB=pi/8; xB,yB,thetaB taken from GPS data, same as yaw
    yaw0=0;           %heading information not actually necessary, but we keep it and treat the desired path (if straight line on x-axis) as psi=0
    phiDot0=0;
-   psiDot0 = 0;     %initialize change in yaw rate to 0
-   initialConditions=[xB,yB,phi0,yaw0,delta0,phiDot0,v,psiDot0];
+   initialConditions=[xB,yB,phi0,yaw0,delta0,phiDot0,v];
    state=initialConditions;
    
 %% This bit cycles as the program updates the location and updates the controller to fix behavior of the bicycle
 
     %decides which segment it is in
     %how do we choose a segment?
-    %how do we know if we are off course at all?
+    %how do we know if we are off course at all? Nav stuff
     [dis,ind]=min((xB-x).^2+(yB-y).^2);    %take the minimum distance between the location of the bicycle and any waypoint
     currentSegment=ind;
     xC=x(currentSegment); yC=y(currentSegment); xD=x(currentSegment+1); yD=y(currentSegment+1);
@@ -58,7 +62,7 @@ function [success, state] = mainNavigation(x,y,v,delta0,phi0,ks,graph)
     success = 1;
 
     % Calculating the ideal distance the perfect path would travel based on
-    % the given waypoints.
+    % the give wayping
     wp_dist = 0;
     
     for i = 2:length(x)
@@ -81,14 +85,11 @@ function [success, state] = mainNavigation(x,y,v,delta0,phi0,ks,graph)
     
     %for k=1:length(x)/tstep
       time = (k-1)*tstep;
-      
-      %can we declare the size of the array ahead of time?
       tarray(k)=time;
-      
       xB=state(k,1);
       yB=state(k,2);
       phiB=state(k,3);
-      thetaB=state(k,4); 
+      thetaB=state(k,4); %same thing as yaw
       v=state(k,7);
               
     %if boundary crossed, choose next segment
@@ -136,9 +137,7 @@ function [success, state] = mainNavigation(x,y,v,delta0,phi0,ks,graph)
    motCommands(k)=u;
    
    %If the lean angle is too high, the test should count as a failure.
-   %Set success = 0. The fail angle is input as pi/4 because this is the
-   %slip point for a bike. The coefficient of friction of rubber on
-   %pavement is 1, so this is the point where weight over comes friction.
+   %Set success = 0.
    if abs(phiB)>=pi/4
        fprintf('Bike has Fallen; Test Failure\n')
        success = 0;
@@ -148,8 +147,7 @@ function [success, state] = mainNavigation(x,y,v,delta0,phi0,ks,graph)
    %add the current state to the array of states that the bike has experienced
    %over the testing period
    % Use Euler to Solve for next state
-   state(k+1,1:7)=state(k,1:7)+zdot(1:7)*tstep;
-   state(k+1,8) = zdot(4);
+   state(k+1,:)=state(k,:)+zdot*tstep;
    
    k=k+1;
    
@@ -160,7 +158,8 @@ function [success, state] = mainNavigation(x,y,v,delta0,phi0,ks,graph)
 
    close all
    if graph == 1
-       simulateBike(state,tarray,x,y,p,navCommands,motCommands);
+       animateBike(state,tarray,x,y,p,navCommands,motCommands);
+       %animateBike is a rename of simulateBike from older MATLAB versions
        %update xB,yB,other state variables (unpack state(end))
    end
 end
