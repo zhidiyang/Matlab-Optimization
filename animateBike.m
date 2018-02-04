@@ -1,4 +1,4 @@
-function animateBike(state,p,motCommands)
+function animateBike(state,p,motCommands, delta_offset, phi_offset)
 %modified version of the file simulateBike
 
 %this function is called at the end of the main navigation code to plot the
@@ -23,7 +23,7 @@ v = state(:,8);
 figure(1) 
 hold on
 subplot(2,2,1)
-plot(tarray,phi);
+plot(tarray,phi,tarray, ones(size(tarray))*phi_offset);
 title('lean vs. time');
 xlabel('time (s)');
 ylabel('phi');
@@ -34,6 +34,8 @@ xlabel('time (s)');
 ylabel('phi-dot');
 subplot(2,2,3)
 plot(tarray,delta);
+hold on;
+plot(tarray,ones(size(tarray))*delta_offset);
 title('steer vs. time');
 xlabel('time (s)');
 ylabel('delta');

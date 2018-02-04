@@ -1,4 +1,4 @@
-function [zdot,u]=rhs(currentState,p,K)
+function [zdot,u]=rhs(currentState,p,K, delta_offset, phi_offset)
 
 %unpack parameters
 g=p.g; l=p.l; b=p.b; h=p.h;
@@ -20,7 +20,7 @@ v = currentState(8);
 %is the function output;
 
 %c3 should have a different sign from the other gains.
-u=k1*phi+k2*phi_dot+k3*delta; %u, control variable, is delta dot
+u=k1*(phi-phi_offset)+k2*phi_dot+k3*(delta-delta_offset); %u, control variable, is delta dot
 
 %set limit for maximum allowable steer rate
 %max steer rate of 4.8 rad/s from ABt Fall '17 report, page 11
@@ -45,7 +45,6 @@ phi_ddot=(1/h)*...
         (v.^2/l + b*v_dot/l + tan(phi).*...
             ((b/l)*v.*phi_dot - (h/l^2)*v.^2.*tan(delta)))...
     -b*v.*delta_dot./(l*cos(delta).^2));
-    %    ^should this be l or l^2
 
 %now we have all our terms in a vector representing the rhs
 zdot=[xdot,ydot,phi_dot,psi_dot,delta_dot,phi_ddot,v_dot];
