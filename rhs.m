@@ -39,12 +39,12 @@ psi_dot=(v/l)*(tan(delta)/cos(phi));
 delta_dot=u;
 v_dot=0;
 %phi_ddot=(-v^2*delta-b*v*u+g*l*phi)/(h*l); %linear equation of motion
-%correct
+
 phi_ddot=(1/h)*...
     (g*sin(phi) - tan(delta).*...
         (v.^2/l + b*v_dot/l + tan(phi).*...
             ((b/l)*v.*phi_dot - (h/l^2)*v.^2.*tan(delta)))...
-    -b*v.*delta_dot./(l*cos(delta).^2));
+    -b*v.*delta_dot./(l*cos(delta).^2)); %nonlinear EOM
 
 %now we have all our terms in a vector representing the rhs
 zdot=[xdot,ydot,phi_dot,psi_dot,delta_dot,phi_ddot,v_dot];

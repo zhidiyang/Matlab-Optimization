@@ -2,20 +2,27 @@
 %Our goal is to optimize the gains such that the bike can safely travel at 
 %any speed and can recover from disturbances.
 
+foldername = "GridSearchOptimization/";
+filename = 'small_test.csv';
+path = char(foldername+filename);
+
 %USE GAIN SCHEDULING TO DETERMINE OPTIMAL GAINS TO DRIVE AT SLOWEST
 %POSSIBLE VELOCITY.
 tic
 
-x = [0 10];
-y = [0 0];
+%ICs
 delta0 = 0;
-phi0 = 0;
-v = 0.5;  %m/s
+phi0 = pi/6;
+phi_dot0 = 0;
+x = 0; 
+y = 10;
+psi0 = 0;
+v = 3;  %m/s
 
 %k3 should be the opposite sign of k1 and k2. GAINS
-k1 = [100:150];
-k2 = [1:100];
-k3 = [-50:-1];  
+k1 = [70:71];
+k2 = [10:11];
+k3 = [-21:-20];  
 
 result = zeros(length(k1)*length(k2)*length(k3),5);
 trial = 1;
@@ -28,9 +35,9 @@ for a=1:n1
     for b=1:n2
         for c=1:n3
 
-            ks = [k1(a) k2(b) k3(c)];
+            K = [k1(a) k2(b) k3(c)];
 
-            [success, state] = mainNavigation(x,y,v,delta0,phi0,ks,0);  
+            [success, state] = runBicycleTest(x,y,v,delta0,phi0,phi_dot0,psi0,K,0,0);  
             phi = abs(state(:,3));
             delta = abs(state(:,5));
             phidot = abs(state(:,6));
@@ -42,7 +49,8 @@ for a=1:n1
             result(trial,1) = success;
             
             %Scoring for Balance (want lean rate to converge to 0)
-            result(trial,2) = sqrt(sum(phidot.^2));
+            %result(trial,2) = sqrt(sum(phidot.^2)+sum(phi.^2)+sum(delta.^2));
+            result(trial,2) = sqrt(sum(phi.^2));
             
 %             %Scoring for Path location by distance from actual final waypoint
 %             result(trial,3) = sqrt((x(end) - xb(end))^2+(y(end)-yb(end))^2);
@@ -87,14 +95,15 @@ fprintf('Balance Score = %f\n', best1(2))
 fprintf('Path Score = %f\n', best1(3))
 fprintf('success = %0.f\n\n', best1(1))
 
-%Print best gains using path score:
-fprintf('Best gain values for v = %fm/s (path score):\n',v)
-fprintf('k1 = %d\nk2 = %d\nk3 = %d\n',best2(4),best2(5),best2(6))
-fprintf('Balance Score = %f\n', best2(2))
-fprintf('Path Score = %f\n', best2(3))
-fprintf('success = %0.f\n', best2(1))
-
 toc
+
+fileID = fopen(path,'w');
+fprintf(fileID, ' %s %s %s %s %s\n ',...
+    ["ICs: ,","delta0="+num2str(delta0), ", phi0="+num2str(phi0),", phid="+num2str(phi_dot0),", Nonlinear EOM - Score = sqrt(phi^2 + phid^2 + delta^2)"]);
+fprintf(fileID, '%s\n ',"success, balance_score, k1, k2, k3");
+fclose(fileID);
+dlmwrite(path,[success,balance_score,k_1,k_2,k_3], '-append');
+
 
 
 

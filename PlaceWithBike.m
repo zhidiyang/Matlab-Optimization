@@ -12,12 +12,7 @@ h = 0.5156; %height of COM, based on Fall '17 calculation of the falling
 v = 3.5; %forward velocity (m/s). Equations linearized based on constant v
 
 
-%%%%%%%%%    constant matricies            %%%%%%
-%from Shihao Wang's 2014 Report
-A = [   0       1       0
-       g/h      0  -v^2/(h*l)
-        0       0       0     ];
-B = [   0  -b*v/(h*l)   1]';
+
  
 
 %arbitrary, change these!
