@@ -14,8 +14,8 @@ v = 0.5;  %m/s
 
 %k3 should be the opposite sign of k1 and k2. GAINS
 k1 = [100:150];
-k2 = [23];
-k3 = [-1];  
+k2 = [1:100];
+k3 = [-50:-1];  
 
 result = zeros(length(k1)*length(k2)*length(k3),5);
 trial = 1;
