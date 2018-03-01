@@ -41,13 +41,13 @@ A = [   0       1       0
 B = [   0  -b*v/(h*l)   1]';
 
 %t = linspace(0.01,1,100);
-t = logspace(-2,2,100);
+t = logspace(-2,4,100);
 result = zeros(length(t),5);
 trial = 1;
 
 for t = t
 
-    Q = t*[0 0 0; 0 0 0; 0 0 1];
+    Q = t*[1 0 0; 0 0 0; 0 0 0];
     R = [1];
 
     [K,S,e] = lqr(A,B,Q,R);
@@ -55,18 +55,18 @@ for t = t
 
 
     [success, state] = runBicycleTest(x,y,v,delta0,phi0,phi_dot0,psi0,K,0,0);  
-    phi = abs(state(:,3));
-    delta = abs(state(:,5));
-    phidot = abs(state(:,6));
-    psidot = abs(state(:,8));
-    xb = state(:,1);
-    yb = state(:,2);
+    phi = abs(state(:,4));
+    delta = abs(state(:,6));
+    phidot = abs(state(:,7));
+    psi = abs(state(:,5));
+    xb = state(:,2);
+    yb = state(:,3);
 
     % Was run Successful?
     result(trial,1) = success;
     
     %Scoring for Balance (want lean rate to converge to 0)
-    result(trial,2) = sqrt(sum(phidot.^2)+sum(phi.^2)+sum(delta.^2));
+    result(trial,2) = sqrt(sum(phi.^2)+sum(phidot.^2)+sum(delta.^2));
     %result(trial,2) = sqrt(sum(phi.^2));
 
     result(trial,4) = K(1);
@@ -101,12 +101,12 @@ fprintf('success = %0.f\n\n', best1(1))
 
 toc
 
-% fileID = fopen(path,'w');
-% fprintf(fileID, ' %s %s %s %s %s\n ',...
-%     ["ICs: ,","delta0="+num2str(delta0), ", phi0="+num2str(phi0),", phid="+num2str(phi_dot0),", Nonlinear EOM"]);
-% fprintf(fileID, '%s\n ',"success, balance_score, k1, k2, k3");
-% fclose(fileID);
-% dlmwrite(path,[success,balance_score,k_1,k_2,k_3], '-append');
+%  fileID = fopen(path,'w');
+%  fprintf(fileID, ' %s %s %s %s %s\n ',...
+%      ["ICs: ,","delta0="+num2str(delta0), ", phi0="+num2str(phi0),", phid="+num2str(phi_dot0),", Nonlinear EOM"]);
+%  fprintf(fileID, '%s\n ',"success, balance_score, k1, k2, k3");
+%  fclose(fileID);
+%  dlmwrite(path,[success,balance_score,k_1,k_2,k_3], '-append');
 
 
 

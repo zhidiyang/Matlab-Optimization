@@ -1,3 +1,4 @@
+
 function animateBike(state,p,motCommands, delta_offset, phi_offset)
 %modified version of the file simulateBike
 
@@ -53,10 +54,11 @@ title('bicycle trajectory');
 xlabel('x position');
 ylabel('y position');
 subplot(2,1,2)
-plot(tarray,psi);
-title('yaw vs. time');
+psid = diff(psi)/diff(tarray);
+plot(tarray(1:end-1),psid);
+title('yaw dot vs. time');
 xlabel('time (s)');
-ylabel('yaw');
+ylabel('yaw dot');
 
 % figure(3)
 % plot(tarray,navCommands);

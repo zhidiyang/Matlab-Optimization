@@ -35,7 +35,7 @@ phi_offset = v0^2/p.l/p.g*delta_offset; %steady state relation between phi & del
    
 %parameters
 timestep = 1/50;  %seconds
-numTimeSteps = 100;
+numTimeSteps = 400;
 
    
 %initialize arrays of state and actuator data
@@ -70,8 +70,9 @@ motCommands = [0]; %command steer angle rate (delta dot) of front motor
  end
  
  if graph == 1
-       animateBike(allStates,p,motCommands,delta_offset, phi_offset);
-       %animateBike is a rename of simulateBike from older MATLAB versions
+     clf
+     animateBike(allStates,p,motCommands,delta_offset, phi_offset);
+     %animateBike is a rename of simulateBike from older MATLAB versions
  end
 
 end

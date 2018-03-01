@@ -3,7 +3,7 @@
 %any speed and can recover from disturbances.
 
 foldername = "GridSearchOptimization/";
-filename = 'small_test.csv';
+filename = 'large_test.csv';
 path = char(foldername+filename);
 
 %USE GAIN SCHEDULING TO DETERMINE OPTIMAL GAINS TO DRIVE AT SLOWEST
@@ -20,9 +20,9 @@ psi0 = 0;
 v = 3;  %m/s
 
 %k3 should be the opposite sign of k1 and k2. GAINS
-k1 = [70:71];
-k2 = [10:11];
-k3 = [-21:-20];  
+k1 = [1:150];
+k2 = [1:100];
+k3 = [-50:-1];  
 
 result = zeros(length(k1)*length(k2)*length(k3),5);
 trial = 1;
@@ -75,7 +75,7 @@ k_2 = result(:,5);
 k_3 = result(:,6);
 
 
-T = table(success,balance_score,path_score,k_1,k_2,k_3)
+T = table(success,balance_score,path_score,k_1,k_2,k_3);
 m = table2array(T);
 
 %Find best test based on balance score:
@@ -99,7 +99,9 @@ toc
 
 fileID = fopen(path,'w');
 fprintf(fileID, ' %s %s %s %s %s\n ',...
-    ["ICs: ,","delta0="+num2str(delta0), ", phi0="+num2str(phi0),", phid="+num2str(phi_dot0),", Nonlinear EOM - Score = sqrt(phi^2 + phid^2 + delta^2)"]);
+    ["ICs: ,","delta0="+num2str(delta0), ", phi0="+num2str(phi0),...
+    ", phid="+num2str(phi_dot0),...
+    ", Nonlinear EOM - Score = sqrt(phi^2)"]);
 fprintf(fileID, '%s\n ',"success, balance_score, k1, k2, k3");
 fclose(fileID);
 dlmwrite(path,[success,balance_score,k_1,k_2,k_3], '-append');
