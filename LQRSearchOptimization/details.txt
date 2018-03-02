@@ -6,6 +6,7 @@ Then the bike was tested with an initial lean angle of pi/6 and the controller
 
 The balance score was calculated as square of the sum of the lean, lean rate, 
 	steer angles (tested for 8 seconds with 1/50 timestep).
+	Lean, lean rate, and steer angles were not normalized 
 
 LQR Best: gains of [11.1,2.4,-6.6] were selected
 	balance score of 5.166 
@@ -14,9 +15,11 @@ LQR Best: gains of [11.1,2.4,-6.6] were selected
 	e2 = -2.91 + 2.0i
 	e3 = -2.91 - 2.0i
 
-Control gains of [71, 21, -20] yeilded a score of 5.146. 
+Control gains of [71, 21, -20] yeilded a score of 5.146.
 	(basically the same as LQR!!!)
+	These control were used in the tests with other ICs.
 Grid Search optimized gains of [23,16,-2] yeilded a score of 4.9358
+Other control gain of [71,10,-20] yeiled a score of: 6.0240
 
 
 MAX STEER ANGLE:

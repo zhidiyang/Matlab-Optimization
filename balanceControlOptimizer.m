@@ -39,10 +39,10 @@ for a=1:n1
 
             [success, state] = runBicycleTest(x,y,v,delta0,phi0,phi_dot0,psi0,K,0,0);  
             
-            phi = abs(state(:,4));
-            delta = abs(state(:,6));
-            phidot = abs(state(:,7));
-            psi = abs(state(:,5));
+            phi = state(:,4);
+            delta = state(:,6);
+            phidot = state(:,7);
+            psi = state(:,5);
             xb = state(:,2);
             yb = state(:,3);
             

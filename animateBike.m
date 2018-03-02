@@ -24,10 +24,11 @@ v = state(:,8);
 figure(1) 
 hold on
 subplot(2,2,1)
-plot(tarray,phi,tarray, ones(size(tarray))*phi_offset);
+plot(tarray,phi,tarray, phi_offset);
 title('lean vs. time');
 xlabel('time (s)');
 ylabel('phi');
+legend("lean","desired lean");
 subplot(2,2,2)
 plot(tarray,phi_dot);
 title('lean rate vs. time');
@@ -36,10 +37,11 @@ ylabel('phi-dot');
 subplot(2,2,3)
 plot(tarray,delta);
 hold on;
-plot(tarray,ones(size(tarray))*delta_offset);
+plot(tarray,delta_offset);
 title('steer vs. time');
 xlabel('time (s)');
 ylabel('delta');
+legend("steer", "desired steer")
 subplot(2,2,4)
 plot(tarray,motCommands);
 title('steer rate vs. time');
