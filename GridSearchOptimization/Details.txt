@@ -1,0 +1,12 @@
+Optimization searched over:
+	k1: [1:150]
+	k2: [1:100]
+	k3: [-50:-1]
+
+Initial condition of phi = pi/6; phid = 0; delta = 0;
+v = 3m/s
+
+Controller simulated for 8 seconds with 1/50 s timestep.
+Score = sqrt(sum(phi.^2)+sum(phidot.^2)+sum(delta.^2))
+
+The best gains with a score of 4.935 were [23,16,-2]
