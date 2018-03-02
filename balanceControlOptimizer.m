@@ -38,25 +38,26 @@ for a=1:n1
             K = [k1(a) k2(b) k3(c)];
 
             [success, state] = runBicycleTest(x,y,v,delta0,phi0,phi_dot0,psi0,K,0,0);  
-            phi = abs(state(:,3));
-            delta = abs(state(:,5));
-            phidot = abs(state(:,6));
-            psidot = abs(state(:,8));
-            xb = state(:,1);
-            yb = state(:,2);
+            
+            phi = abs(state(:,4));
+            delta = abs(state(:,6));
+            phidot = abs(state(:,7));
+            psi = abs(state(:,5));
+            xb = state(:,2);
+            yb = state(:,3);
             
             % Was run Successful?
             result(trial,1) = success;
             
             %Scoring for Balance (want lean rate to converge to 0)
             %result(trial,2) = sqrt(sum(phidot.^2)+sum(phi.^2)+sum(delta.^2));
-            result(trial,2) = sqrt(sum(phi.^2));
+            result(trial,2) = sqrt(sum(phi.^2)+sum(phidot.^2)+sum(delta.^2));
             
 %             %Scoring for Path location by distance from actual final waypoint
 %             result(trial,3) = sqrt((x(end) - xb(end))^2+(y(end)-yb(end))^2);
             
             %Scoring for Path location based on yaw rate
-            result(trial, 3) = sqrt(sum(psidot.^2));
+            result(trial, 3) = 0;
             
             result(trial,4) = k1(a);
             result(trial,5) = k2(b);
