@@ -1,0 +1,14 @@
+Tests with desired steer:
+
+4 balance controllers were tested to achieve a desired steer angle.
+desired steer was a sine wave with a period of 8 seconds and a max amplitude = 0.52 rad
+
+ICs: phi0 = phidot0 = delta0 = 0
+
+Nav_Score = sqrt of sum of squares of difference between delta and delta commanded
+
+Controller:	Gains:			Score:		
+LQR 		[11.1,2.4,-6.6]			
+Grid Search  	[23,16,-2]		
+Nav (control)	[71, 21, -20]		3.04
+Old (control)	[71,10,-20]		2.11

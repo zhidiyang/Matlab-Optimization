@@ -1,0 +1,2 @@
+Tests conducted with balance gains of [71,21,-20]. 
+Nonlinear EOM, Euler Intergration to solve DEs.
