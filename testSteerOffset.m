@@ -123,7 +123,7 @@ figure(traj)
 legend ("lqr [11.1, 2.4, -6.6]", "grid [23, 16, -2]", "Nav [71, 21, -20]",...
     "other [71,10,-20]")
 shg
-
+.m
 
 
 function delta_offset = makeStepOffset()
