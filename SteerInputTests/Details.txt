@@ -8,7 +8,7 @@ ICs: phi0 = phidot0 = delta0 = 0
 Nav_Score = sqrt of sum of squares of difference between delta and delta commanded
 
 Controller:	Gains:			Score:		
-LQR 		[11.1,2.4,-6.6]			
-Grid Search  	[23,16,-2]		
+LQR 		[11.1,2.4,-6.6]		3.88	
+Grid Search  	[23,16,-2]		3.84
 Nav (control)	[71, 21, -20]		3.04
 Old (control)	[71,10,-20]		2.11
