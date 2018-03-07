@@ -20,9 +20,9 @@ psi0 = 0;
 v = 3;  %m/s
 
 %k3 should be the opposite sign of k1 and k2. GAINS
-k1 = [1:150];
-k2 = [1:100];
-k3 = [-50:-1];  
+k1 = [71:72];
+k2 = [10:11];
+k3 = [-20:-19];  
 
 result = zeros(length(k1)*length(k2)*length(k3),5);
 trial = 1;
@@ -37,7 +37,7 @@ for a=1:n1
 
             K = [k1(a) k2(b) k3(c)];
 
-            [success, state] = runBicycleTest(x,y,v,delta0,phi0,phi_dot0,psi0,K,0,0);  
+            [success, state] = runBicycleTest(x,y,v,delta0,phi0,phi_dot0,psi0,K,0, 400,0);  
             
             phi = state(:,4);
             delta = state(:,6);
@@ -98,14 +98,14 @@ fprintf('success = %0.f\n\n', best1(1))
 
 toc
 
-fileID = fopen(path,'w');
-fprintf(fileID, ' %s %s %s %s %s\n ',...
-    ["ICs: ,","delta0="+num2str(delta0), ", phi0="+num2str(phi0),...
-    ", phid="+num2str(phi_dot0),...
-    ", Nonlinear EOM - Score = sqrt(phi^2)"]);
-fprintf(fileID, '%s\n ',"success, balance_score, k1, k2, k3");
-fclose(fileID);
-dlmwrite(path,[success,balance_score,k_1,k_2,k_3], '-append');
+% fileID = fopen(path,'w');
+% fprintf(fileID, ' %s %s %s %s %s\n ',...
+%     ["ICs: ,","delta0="+num2str(delta0), ", phi0="+num2str(phi0),...
+%     ", phid="+num2str(phi_dot0),...
+%     ", Nonlinear EOM - Score = sqrt(phi^2)"]);
+% fprintf(fileID, '%s\n ',"success, balance_score, k1, k2, k3");
+% fclose(fileID);
+% dlmwrite(path,[success,balance_score,k_1,k_2,k_3], '-append');
 
 
 

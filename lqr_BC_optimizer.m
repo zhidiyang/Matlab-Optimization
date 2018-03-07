@@ -54,7 +54,7 @@ for t = t
     K = -1*K; %get K from lqr controller to match sign convention
 
 
-    [success, state] = runBicycleTest(x,y,v,delta0,phi0,phi_dot0,psi0,K,0,0);  
+    [success, state] = runBicycleTest(x,y,v,delta0,phi0,phi_dot0,psi0,K,0, 400, 0);  
     phi = state(:,4);
     delta = state(:,6);
     phidot = state(:,7);
