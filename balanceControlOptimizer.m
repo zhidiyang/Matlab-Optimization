@@ -76,18 +76,13 @@ k_2 = result(:,5);
 k_3 = result(:,6);
 
 
-T = table(success,balance_score,path_score,k_1,k_2,k_3);
+T = table(success,balance_score,path_score,k_1,k_2,k_3)
 m = table2array(T);
 
 %Find best test based on balance score:
 m = sortrows(m,2);
 indm = find(m(:,1));  %filters out failures
 best1 = m(indm(1),:); 
-
-%Find best test based on path score:
-m = sortrows(m,3);
-indm = find(m(:,1));
-best2 = m(indm(1),:);
 
 %Print best gains using balance score:
 fprintf('Best gain values for v = %fm/s (balance score):\n',v)

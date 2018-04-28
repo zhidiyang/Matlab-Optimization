@@ -3,8 +3,8 @@
 %any speed and can recover from disturbances.
 clear
 
-foldername = "LQRSearchOptimization/";
-filename = 'small_test.csv';
+foldername = "LQRSearchOptimization/4.22.18_phi_dot_Q_term/";
+filename = '3_m_per_s_LQR.csv';
 path = char(foldername+filename);
 
 %USE GAIN SCHEDULING TO DETERMINE OPTIMAL GAINS TO DRIVE AT SLOWEST
@@ -41,13 +41,13 @@ A = [   0       1       0
 B = [   0  -b*v/(h*l)   1]';
 
 %t = linspace(0.01,1,100);
-t = logspace(-2,2,100);
+t = logspace(-1,4,100);
 result = zeros(length(t),8);
 trial = 1;
 
 for t = t
 
-    Q = t*[1 0 0; 0 0 0; 0 0 0];
+    Q = t*[1 0 0; 0 0.1 0; 0 0 0];
     R = [1];
 
     [K,S,e] = lqr(A,B,Q,R);
@@ -68,7 +68,7 @@ for t = t
     result(trial,1) = success;
     
     %Scoring for Balance (want lean rate to converge to 0)
-    result(trial,2) = sqrt(sum(phi.^2)+sum(phidot.^2)+sum(delta.^2));
+    result(trial,2) = sqrt(sum(phi.^2)+sum(phidot.^2)/4+sum(delta.^2));
     %result(trial,2) = sqrt(sum(phi.^2));
 
     result(trial,4) = K(1);
@@ -77,7 +77,7 @@ for t = t
     result(trial,7) = t;
     result(trial,8) = e(1);
     result(trial,9) = e(2);
-    results(trial,10) =e(3);
+    result(trial,10) =e(3);
     trial = trial + 1;
     
 end
@@ -92,7 +92,7 @@ k_3 = result(:,6);
 ratio = result(:,7);
 e1 = result(:,8);
 e2 = result(:,9);
-e3 = results(:,10);
+e3 = result(:,10);
 
 T = table(success,balance_score,path_score,k_1,k_2,k_3,ratio,e1,e2,e3)
 m = table2array(T);
@@ -115,12 +115,12 @@ fprintf('eig1 = %f', real(best1(10))); fprintf('+ %f', imag(best1(10))); fprintf
 
 toc
 
-%  fileID = fopen(path,'w');
-%  fprintf(fileID, ' %s %s %s %s %s\n ',...
-%      ["ICs: ,","delta0="+num2str(delta0), ", phi0="+num2str(phi0),", phid="+num2str(phi_dot0),", Nonlinear EOM"]);
-%  fprintf(fileID, '%s\n ',"success, balance_score, k1, k2, k3, r*Q=R,e1,e2,e3");
-%  fclose(fileID);
-%  dlmwrite(path,[success,balance_score,k_1,k_2,k_3,ratio,e1,e2,e3], '-append');
+ fileID = fopen(path,'w');
+ fprintf(fileID, ' %s %s %s %s %s\n ',...
+     ["ICs: ,","delta0="+num2str(delta0), ", phi0="+num2str(phi0),", phid="+num2str(phi_dot0),", Nonlinear EOM"]);
+ fprintf(fileID, '%s\n ',"success, balance_score, k1, k2, k3, r*Q=R,e1,e2,e3");
+ fclose(fileID);
+ dlmwrite(path,[success,balance_score,k_1,k_2,k_3,ratio,e1,e2,e3], '-append');
 
 
 

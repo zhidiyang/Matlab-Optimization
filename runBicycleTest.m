@@ -1,5 +1,5 @@
-function [success, allStates] = runBicycleTest(x0,y0,v0,delta0,...
-                                phi0,phi_dot0, psi0, K, delta_offset, numTimeSteps, graph)
+function [success, allStates] = runBicycleTest(x0,y0,v0,delta0,phi0, ...
+                phi_dot0,psi0, K, delta_offset, numTimeSteps, graph)
 %function to simulate a bicycle for given intial conditions and gains
 %   similiar to the function mainNavigation developed in previous semesters
 %   (look in Fall17_Jeremy_and_Graham folder)
