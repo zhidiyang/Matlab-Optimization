@@ -56,16 +56,16 @@ motCommands = zeros(numTimeSteps,1);
 %add initial values to arrays
 allStates(1,:) = currentState; %keep track of the state at each timestep
 motCommands(1) = 0; %command steer angle rate (delta dot) of front motor
- 
+I_error = 0;
 
  while (count < numTimeSteps)    
     count = count+1;
-   [zdot, u] = rhs(currentState,p,K, delta_offset(count), phi_offset(count)); 
+   [zdot, u] = rhs(currentState,p,K, delta_offset(count), phi_offset(count),I_error); 
     %calculate derivatives based on EOM
     %also calculate u=delta_dot, the desired steer rate the keep balance
     %(count+1) gives rhs the delta_offset that the bike should be at the 
     %next timestep
- 
+    
    % If the lean angle is too high, the test should count as a failure,
    % ie, the bicycle falls over
    phi = currentState(4);
@@ -89,6 +89,5 @@ motCommands(1) = 0; %command steer angle rate (delta dot) of front motor
      animateBike(allStates,p,motCommands,delta_offset, phi_offset);
      %animateBike is a rename of simulateBike from older MATLAB versions
  end
-
 end
 

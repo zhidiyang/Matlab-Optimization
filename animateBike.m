@@ -68,45 +68,45 @@ ylabel('yaw dot');
 % ylabel('steer commmands');
 % title('target steer angle vs. time');
 
-%% animation for the bicycle--taken from Kate's animation, which is taken from Diego's animation
- %initialize figure for animation
-   
-   animationFig = figure(4);
-   axis equal
-   grid on
-   hold on
-   xlabel('x')
-   ylabel('y')
-   zlabel('z')
-   az = 45;
-   el = 30;
-   view(az, el);
-
-[COG_hand,SH_hand,CPfw_hand,CPrw_hand]=drawBike(x(1),y(1),z(1),psi(1),phi(1),delta(1), p);
-trajectory=plot3(x(1),y(1),z(1),'c');
-axis([(x(1)-3) (x(1)+3) (y(1)-3) (y(1)+3) 0 (x(1)+3)])
-
-pause(p.pause)
-
-for i=1:length(x)
-  if ~ishandle(animationFig)
-      break;
-  end
-%delete(COG_hand,SH_hand,CPfw_hand,CPrw_hand,trajectory)    
-delete(COG_hand)
-delete(SH_hand)
-delete(CPfw_hand)
-delete(CPrw_hand)
-delete(trajectory)
-    
-[COG_hand,SH_hand,CPfw_hand,CPrw_hand]=drawBike(x(i),y(i),z(i),psi(i),phi(i),delta(i),p);
-trajectory=plot3(x(1:i),y(1:i),z(1:i),'c');
-hold on;
-plot(x(1:i),y(1:i),'r');
-
-axis([(x(i)-2) (x(i)+2) (y(i)-2) (y(i)+2) 0 4]);
-
-pause(p.pause)
-end
+% %% animation for the bicycle--taken from Kate's animation, which is taken from Diego's animation
+%  %initialize figure for animation
+%    
+%    animationFig = figure(4);
+%    axis equal
+%    grid on
+%    hold on
+%    xlabel('x')
+%    ylabel('y')
+%    zlabel('z')
+%    az = 45;
+%    el = 30;
+%    view(az, el);
+% 
+% [COG_hand,SH_hand,CPfw_hand,CPrw_hand]=drawBike(x(1),y(1),z(1),psi(1),phi(1),delta(1), p);
+% trajectory=plot3(x(1),y(1),z(1),'c');
+% axis([(x(1)-3) (x(1)+3) (y(1)-3) (y(1)+3) 0 (x(1)+3)])
+% 
+% pause(p.pause)
+% 
+% for i=1:length(x)
+%   if ~ishandle(animationFig)
+%       break;
+%   end
+% %delete(COG_hand,SH_hand,CPfw_hand,CPrw_hand,trajectory)    
+% delete(COG_hand)
+% delete(SH_hand)
+% delete(CPfw_hand)
+% delete(CPrw_hand)
+% delete(trajectory)
+%     
+% [COG_hand,SH_hand,CPfw_hand,CPrw_hand]=drawBike(x(i),y(i),z(i),psi(i),phi(i),delta(i),p);
+% trajectory=plot3(x(1:i),y(1:i),z(1:i),'c');
+% hold on;
+% plot(x(1:i),y(1:i),'r');
+% 
+% axis([(x(i)-2) (x(i)+2) (y(i)-2) (y(i)+2) 0 4]);
+% 
+% pause(p.pause)
+% end
 
 end

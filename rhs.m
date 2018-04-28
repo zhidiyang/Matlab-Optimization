@@ -1,4 +1,4 @@
-function [zdot,u]=rhs(currentState,p,K, delta_offset, phi_offset)
+function [zdot,u]=rhs(currentState,p,K, delta_offset, phi_offset,I_error)
 
 %unpack parameters
 g=p.g; l=p.l; b=p.b; h=p.h;
@@ -19,8 +19,16 @@ v = currentState(8);
 %variables (inputs) to define these. %that, as well as control output u, 
 %is the function output;
 
+%testing code to get controller to go in a striaght line.
+phi_bias = 0.26; delta_bias = 0.26;
+yaw_gain = 0;
+phi_offset = -1*yaw_gain*psi;
+disp(psi)
+delta_offset = v^2/10*phi_offset;
+
+u=k1*(phi+phi_bias-phi_offset)+k2*phi_dot+k3*(delta+delta_bias-delta_offset); 
 %c3 should have a different sign from the other gains.
-u=k1*(phi-phi_offset)+k2*phi_dot+k3*(delta-delta_offset); %u, control variable, is delta dot
+%u, control variable, is delta dot
 
 %set limit for maximum allowable steer rate
 %max steer rate of 4.8 rad/s from ABt Fall '17 report, page 11
