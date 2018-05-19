@@ -1,0 +1,781 @@
+clear all;
+
+% monitor=figure('Position',[0 100 0 100]);
+monitor=figure();
+subplot(3,2,1)
+phiPlot=plot(0,0);
+title('\phi Plot')
+
+subplot(3,2,2)
+deltaPlot=plot(0,0);
+title('\delta Plot')
+
+subplot(3,2,3)
+psiPlot=plot(0,0);
+title('\psi Plot')
+
+subplot(3,2,4)
+vPlot=plot(0,0);
+title('v Plot')
+
+subplot(3,2,5)
+xPlot=plot(0,0);
+title('x Plot')
+
+subplot(3,2,6)
+yPlot=plot(0,0);
+title('y Plot')
+
+fig = figure;
+ax = axes;
+xRearPoint=0;
+yRearPoint=0;
+zRearPoint=0;
+psi=pi/6;
+phi=pi/6;
+delta=pi/4;
+r=5;
+c=1;
+zetaAnimate=atan(3/4);
+t=[0:0.01:2*pi];
+
+%% Point in X Plane
+pointRear=[];
+pointRear(1,:)=r*sin(t);
+pointRear(3,:)=r+r*cos(t);
+pointLength=length(pointRear);
+pointRear(2,pointLength+1:pointLength+3)=[0,0,0];
+pointRear(1,pointLength+1:pointLength+3)=[0,0,14];
+pointRear(3,pointLength+1:pointLength+3)=[r,13,13];
+pointFront=[];
+pointFront(1,:)=20+r*sin(t)+c;
+pointFront(3,:)=r+r*cos(t);
+pointFront(:,end+1:end+6)=[21,20,14,11,11,11;0,0,0,0,-5,5;5,5,13,17,17,17];
+rearPlot=plot3(pointRear(1,:),pointRear(2,:),pointRear(3,:),'LineWidth',2);
+hold on
+frontPlot=plot3(pointFront(1,:),pointFront(2,:),pointFront(3,:),'LineWidth',2);
+hold on
+trajectoryRearPlot=plot(0,0,'b-');
+trajectoryRearX=[];
+trajectoryRearY=[];
+trajectoryFrontPlot=plot(1,0,'r-.');
+trajectoryFrontX=[];
+trajectoryFrontY=[];
+
+desireTrajectoryRearPlot=plot(0,0,'g-','LineWidth',2);
+% desireTrajectoryRearX=[];
+% desireTrajectoryRearY=[];
+
+
+%% View
+az = 45;
+el = 20;
+view(az, el);
+axis equal
+% axis([-10 10 -10 10 0 10]/2)
+grid on
+
+fig.WindowKeyPressFcn = @myKeyPress;
+fig.WindowKeyReleaseFcn = @myKeyRelease;
+fig.UserData.myPhi = 0;
+fig.UserData.myV = 0;
+
+%% define parameters
+g = 9.81; %acceleration due to gravity
+l = 1.02; %length of wheel base 
+b = 0.33; %distance from rear wheel to COM projected onto ground
+h = 0.516; %height of COM in point mass model
+m = 10;
+I_1 = m*(l/2)^2/4;
+zeta = 10/180*pi;
+
+
+
+%% define parameters
+% mParameter.g = 9.81; %acceleration due to gravity
+% mParameter.l = 1.02; %length of wheel base 
+% mParameter.b = 0.33; %distance from rear wheel to COM projected onto ground
+% mParameter.h = 0.516; %height of COM in point mass model
+% mParameter.m = 10;
+% mParameter.I_1 = mParameter.m*(mParameter.l/2)^2/4;
+% mParameter.zeta = 10/180*pi;
+mParameter.g = g; %acceleration due to gravity
+mParameter.l = l; %length of wheel base 
+mParameter.b = b; %distance from rear wheel to COM projected onto ground
+mParameter.h = h; %height of COM in point mass model
+mParameter.m = m;
+mParameter.I_1 = I_1;
+mParameter.I_2 = 2*mParameter.I_1;
+mParameter.I_3 = mParameter.I_1;
+mParameter.zeta = zeta;
+
+% mParameter.C = C;
+
+%% circle
+% mParameter.v_star = 2;
+% mParameter.phi_star = 0.1;
+% 
+% IC = [0.1,0,0,1,0,0,0];
+% timeTotal=100;
+% opts.RelTol = 1e-6;
+% opts.AbsTol = 1e-6;
+% [timeArray,resultArray]=ode45(@RHS_Bicycle,[0 timeTotal],IC,opts,mParameter);
+% 
+% 
+% plot(resultArray(:,5),resultArray(:,6))
+% axis equal
+% % plot(timeArray,resultArray(:,4))
+
+%% Delta negetive first and then positive
+mParameter.v_star = 2;
+mParameter.phi_star = 0;
+
+C = getCusingLQR(mParameter.phi_star,mParameter.v_star);
+mParameter.C = C;
+
+currentPhiSetting = mParameter.phi_star;
+currentVSetting = mParameter.v_star;
+
+IC = [0.1,0,0,2,0,0,0];
+% timeTotal=30;
+opts.RelTol = 1e-6;
+opts.AbsTol = 1e-6;
+% [timeArray,resultArray]=ode45(@RHS_Bicycle,[0 timeTotal],IC,opts,mParameter);
+
+
+% plot(resultArray(:,5),resultArray(:,6))
+% axis equal
+% % plot(timeArray,resultArray(:,4))
+% figure
+% plot(timeArray,resultArray(:,3))
+
+%% Animate
+
+% for i=1:1:length(timeArray)
+%     phiTemp=resultArray(i,1);
+%     deltaTemp=resultArray(i,3);
+%     vTemp=resultArray(i,4);
+%     xTemp=resultArray(i,5);
+%     yTemp=resultArray(i,6);
+%     psiTemp=resultArray(i,7);
+    
+%     n=[-sin(zetaAnimate);0;cos(zetaAnimate)];
+%     n_skew=[0 -n(3) n(2) ; n(3) 0 -n(1) ; -n(2) n(1) 0 ];
+%     R=(n*n'+cos(deltaTemp)*(eye(3)-n*n')+sin(deltaTemp)*n_skew);
+
+%     tempPointFront=pointFront-[20;0;5];
+%     tempPointFront=R*tempPointFront;
+%     steerPointFront=tempPointFront+[20;0;5];
+
+%     n=[-1;0;0];
+%     n_skew=[0 -n(3) n(2) ; n(3) 0 -n(1) ; -n(2) n(1) 0 ];
+%     R=(n*n'+cos(phiTemp)*(eye(3)-n*n')+sin(phiTemp)*n_skew);
+
+%     leanPointFront=R*steerPointFront;
+%     leanPointRear=R*pointRear;
+
+%     n=[0;0;1];
+%     n_skew=[0 -n(3) n(2) ; n(3) 0 -n(1) ; -n(2) n(1) 0 ];
+%     R=(n*n'+cos(psiTemp)*(eye(3)-n*n')+sin(psiTemp)*n_skew);
+
+%     yawPointFront=R*steerPointFront;
+%     yawPointRear=R*pointRear; 
+
+%     finalPointFront=yawPointFront/20+[xTemp;yTemp;0];   
+%     finalPointRear=yawPointRear/20+[xTemp;yTemp;0];  
+
+%     rearPlot.XData=finalPointRear(1,:);
+%     rearPlot.YData=finalPointRear(2,:);
+%     rearPlot.ZData=finalPointRear(3,:);
+%     frontPlot.XData=finalPointFront(1,:);
+%     frontPlot.YData=finalPointFront(2,:);
+%     frontPlot.ZData=finalPointFront(3,:);
+%     drawnow;
+% end
+allResultArray=IC;
+allTimeArray=[0];
+
+% [trainingTrajectory,trainingTrajectoryArrayLength] = generateTrajectory_StraightLine(1000,0.1);
+% [trainingTrajectory,trainingTrajectoryArrayLength] = generateTrajectory_Sin(1000,0.1);
+[trainingTrajectory,trainingTrajectoryArrayLength] = generateTrajectory_Circle(1000,0.1);
+currentTrainingPosition = 30;
+desireTrajectoryRearPlot.XData = trainingTrajectory(:,1);
+desireTrajectoryRearPlot.YData = trainingTrajectory(:,2);
+
+% desireTrajectoryRearPlot=plot(0,0,'g-','LineWidth',2);
+% desireTrajectoryRearPlot.XData = trainingTrajectory(:,1);
+% desireTrajectoryRearPlot.YData = trainingTrajectory(:,2);
+
+wayPointPlot=plot(0,0,'*','MarkerSize',10);
+wayPointPlot.XData = trainingTrajectory(currentTrainingPosition,1);
+wayPointPlot.YData = trainingTrajectory(currentTrainingPosition,2);
+
+myNet = fitnet(10);
+myFinalNet = fitnet(9);
+k = 0;
+
+timeInterval = 0.2;
+
+inputData = [];
+outputData = [];
+
+% for tempY = -0.03:0.005:0.03
+%     % for tempPsi = 0.03
+%     for tempPsi = -0.04:0.005:0.04
+%         % for tempPhi = -0.25:0.05:0.25
+%         minCost = 100000;
+%         bestPhiSetting = 0;
+%         for phiSetting = -0.25:0.01:0.25
+%             mParameter.phi_star = phiSetting;
+%             IC = [0,0,0,2,0,tempY,tempPsi];
+%             [carDistance,headingDifference,forwardPointHeadingDifference,currentPhi,currentPhiDot,currentDelta,currentV] = stateSimplify(IC,trainingTrajectory,trainingTrajectoryArrayLength);
+%             [timeArray,resultArray]=ode45(@RHS_Bicycle,[0 timeInterval],IC,opts,mParameter);
+%             IC = resultArray(end,:);
+%             [newCarDistance,newHeadingDifference,newForwardPointHeadingDifference,newPhi,newPhiDot,newDelta,newV] = stateSimplify(IC,trainingTrajectory,trainingTrajectoryArrayLength);
+%             % phiSetting
+%             costValue = newCarDistance^2 + k*newHeadingDifference^2;
+%             if costValue < minCost
+%                 minCost = costValue;
+%                 bestPhiSetting = phiSetting;
+%             end
+%         end
+%         inputData(:,end+1) = [carDistance,headingDifference];
+%         outputData(:,end+1) = bestPhiSetting;
+%         % end
+%     end
+% end
+
+
+% [myNewNet,tr] = train(myNet,inputData,outputData);
+IC = [0.1,0,0,2,0,0,0];
+mParameter.v_star = 2;
+mParameter.phi_star = 0;
+
+while currentTrainingPosition < trainingTrajectoryArrayLength/2-30
+
+    % % Interactive without NN
+    % phi_star=mParameter.phi_star+fig.UserData.myPhi/100
+    % mParameter.phi_star=phi_star;
+
+    % v_star=mParameter.v_star+fig.UserData.myV/10
+    % mParameter.v_star=v_star;
+
+    % % if phi_star ~= currentPhi | v_star ~= currentV
+    % %     C = getCusingLQR(mParameter.phi_star,mParameter.v_star);
+    % %     mParameter.C = C;
+
+    % %     currentPhi=phi_star;
+    % %     currentV=v_star;
+
+    % % end
+
+    [carDistance,headingDifference,forwardPointHeadingDifference,currentPhi,currentPhiDot,currentDelta,currentV] = stateSimplify(IC,trainingTrajectory,trainingTrajectoryArrayLength);
+
+    [timeArray,resultArray]=ode45(@RHS_Bicycle,[0 timeInterval],IC,opts,mParameter);
+    IC = resultArray(end,:);
+    allResultArray=[allResultArray;resultArray];
+    allTimeArray=[allTimeArray;timeArray+allTimeArray(end)];
+
+    [newCarDistance,newHeadingDifference,newForwardPointHeadingDifference,newPhi,newPhiDot,newDelta,newV] = stateSimplify(IC,trainingTrajectory,trainingTrajectoryArrayLength);
+    costValue = newCarDistance^2 + k*newHeadingDifference^2;
+    newCarDistance
+    newHeadingDifference
+    % carDistance
+    % headingDifference
+    % currentPhiSetting
+
+    % inputData(:,end+1) = [carDistance,headingDifference,currentPhiSetting];
+    % inputData(:,end+1) = [newCarDistance,newHeadingDifference,currentPhiSetting];
+    % inputData(:,end+1) = [carDistance,headingDifference,forwardPointHeadingDifference,currentPhi,currentPhiDot,currentDelta,currentV,currentPhiSetting,currentVSetting];
+    % inputData(:,end+1) = [carDistance,headingDifference,currentPhi,currentPhiDot,currentDelta,currentV,currentPhiSetting];
+    % outputData(:,end+1) = costValue;
+    % outputData(:,end+1) = [newCarDistance,newHeadingDifference];
+
+    [myPhiSetting,myVSetting,newTrainingPosition] = generateCommand(IC,trainingTrajectory,trainingTrajectoryArrayLength,currentTrainingPosition);
+    % if newCarDistance <0.03 & newCarDistance >-0.03 & newHeadingDifference < 0.04 & newHeadingDifference >-0.04
+    %     myInput = [newCarDistance,newHeadingDifference]';
+    %     myPhiSetting = sim(myNewNet,myInput)
+    % end
+    wayPointPlot.XData = trainingTrajectory(currentTrainingPosition,1);
+wayPointPlot.YData = trainingTrajectory(currentTrainingPosition,2);
+    myPhiSetting
+    mParameter.phi_star = myPhiSetting;
+    mParameter.v_star = myVSetting;    
+    currentPhiSetting = mParameter.phi_star;
+    currentVSetting = mParameter.v_star;
+    currentTrainingPosition = newTrainingPosition;
+
+    % Animation
+
+    phiTemp=resultArray(end,1);
+    deltaTemp=resultArray(end,3);
+    vTemp=resultArray(end,4);
+    xTemp=resultArray(end,5);
+    yTemp=resultArray(end,6);
+    psiTemp=resultArray(end,7);
+    
+    n=[-sin(zetaAnimate);0;cos(zetaAnimate)];
+    n_skew=[0 -n(3) n(2) ; n(3) 0 -n(1) ; -n(2) n(1) 0 ];
+    R=(n*n'+cos(deltaTemp)*(eye(3)-n*n')+sin(deltaTemp)*n_skew);
+
+    tempPointFront=pointFront-[20;0;5];
+    tempPointFront=R*tempPointFront;
+    steerPointFront=tempPointFront+[20;0;5];
+
+    n=[-1;0;0];
+    n_skew=[0 -n(3) n(2) ; n(3) 0 -n(1) ; -n(2) n(1) 0 ];
+    R=(n*n'+cos(phiTemp)*(eye(3)-n*n')+sin(phiTemp)*n_skew);
+
+    leanPointFront=R*steerPointFront;
+    leanPointRear=R*pointRear;
+
+    n=[0;0;1];
+    n_skew=[0 -n(3) n(2) ; n(3) 0 -n(1) ; -n(2) n(1) 0 ];
+    R=(n*n'+cos(psiTemp)*(eye(3)-n*n')+sin(psiTemp)*n_skew);
+
+    yawPointFront=R*steerPointFront;
+    yawPointRear=R*pointRear; 
+
+    finalPointFront=yawPointFront/20+[xTemp;yTemp;0];   
+    finalPointRear=yawPointRear/20+[xTemp;yTemp;0];  
+
+    rearPlot.XData=finalPointRear(1,:);
+    rearPlot.YData=finalPointRear(2,:);
+    rearPlot.ZData=finalPointRear(3,:);
+    frontPlot.XData=finalPointFront(1,:);
+    frontPlot.YData=finalPointFront(2,:);
+    frontPlot.ZData=finalPointFront(3,:);
+    % axis([xTemp-2 xTemp+2 yTemp-2 yTemp+2 0 1])
+    % ax.ZLim = [0 1];
+    ax.YLim = [yTemp-2 yTemp+2];
+    ax.XLim = [xTemp-2 xTemp+2];
+
+    trajectoryRearX(end+1)=xTemp;
+    trajectoryRearY(end+1)=yTemp;
+
+    [minZ,Index]=min(finalPointFront(3,:));
+
+    trajectoryFrontX(end+1)=finalPointFront(1,Index);
+    trajectoryFrontY(end+1)=finalPointFront(2,Index);
+
+    trajectoryRearPlot.XData=trajectoryRearX;
+    trajectoryRearPlot.YData=trajectoryRearY;
+
+    trajectoryFrontPlot.XData=trajectoryFrontX;
+    trajectoryFrontPlot.YData=trajectoryFrontY;
+    
+    startTime=1;
+    if length(allResultArray)>5001
+        startTime=length(allResultArray)-5000;
+    end
+    phiPlot.XData=allTimeArray(startTime:end);
+    phiPlot.YData=allResultArray(startTime:end,1);
+    deltaPlot.XData=allTimeArray(startTime:end);
+    deltaPlot.YData=allResultArray(startTime:end,3);
+    vPlot.XData=allTimeArray(startTime:end);
+    vPlot.YData=allResultArray(startTime:end,4);
+    xPlot.XData=allTimeArray(startTime:end);
+    xPlot.YData=allResultArray(startTime:end,5);
+    yPlot.XData=allTimeArray(startTime:end);
+    yPlot.YData=allResultArray(startTime:end,6);
+    psiPlot.XData=allTimeArray(startTime:end);
+    psiPlot.YData=allResultArray(startTime:end,7);
+    drawnow;
+
+end
+
+[myNewNet,tr] = train(myNet,inputData,outputData);
+
+% inputData = [];
+% outputData = [];
+
+while currentTrainingPosition < trainingTrajectoryArrayLength-30
+
+    % % Interactive without NN
+    % phi_star=mParameter.phi_star+fig.UserData.myPhi/100
+    % mParameter.phi_star=phi_star;
+
+    % v_star=mParameter.v_star+fig.UserData.myV/10
+    % mParameter.v_star=v_star;
+
+    % % if phi_star ~= currentPhi | v_star ~= currentV
+    % %     C = getCusingLQR(mParameter.phi_star,mParameter.v_star);
+    % %     mParameter.C = C;
+
+    % %     currentPhi=phi_star;
+    % %     currentV=v_star;
+
+    % % end
+
+    [carDistance,headingDifference,forwardPointHeadingDifference,currentPhi,currentPhiDot,currentDelta,currentV] = stateSimplify(IC,trainingTrajectory,trainingTrajectoryArrayLength);
+
+    [timeArray,resultArray]=ode45(@RHS_Bicycle,[0 timeInterval],IC,opts,mParameter);
+    IC = resultArray(end,:);
+    allResultArray=[allResultArray;resultArray];
+    allTimeArray=[allTimeArray;timeArray+allTimeArray(end)];
+
+    [newCarDistance,newHeadingDifference,newForwardPointHeadingDifference,newPhi,newPhiDot,newDelta,newV] = stateSimplify(IC,trainingTrajectory,trainingTrajectoryArrayLength);
+    costValue = newCarDistance^2 + k*newHeadingDifference^2;
+
+    % minCost = 100000;
+    % for tempPhi = -0.3:0.01:0.3
+    %     for tempV = 1.6:0.1:2.4
+    %         myInput = [newCarDistance,newHeadingDifference,newForwardPointHeadingDifference,newPhi,newPhiDot,newDelta,newV,tempPhi,tempV]';
+    %         tempCost = sim(myNewNet,myInput);
+    %         if tempCost < minCost
+    %             minCost = tempCost;
+    %             myPhiSetting = tempPhi;
+    %             myVSetting = tempV;
+    %         end
+    %     end
+    % end
+
+    minCost = 100000;
+    for tempPhi = -0.1:0.01:0.1
+        % myInput = [newCarDistance,newHeadingDifference,tempPhi]';
+        myInput = [newCarDistance,newHeadingDifference,newPhi,newPhiDot,newDelta,newV,tempPhi]';
+        tempCost = sim(myNewNet,myInput);
+        if tempCost < minCost
+            minCost = tempCost;
+            myPhiSetting = tempPhi;
+        end
+    end
+
+    mParameter.phi_star = myPhiSetting;
+    mParameter.v_star = myVSetting;    
+    currentPhiSetting = mParameter.phi_star;
+    currentVSetting = mParameter.v_star;
+
+    % Animation
+
+    phiTemp=resultArray(end,1);
+    deltaTemp=resultArray(end,3);
+    vTemp=resultArray(end,4);
+    xTemp=resultArray(end,5);
+    yTemp=resultArray(end,6);
+    psiTemp=resultArray(end,7);
+    
+    n=[-sin(zetaAnimate);0;cos(zetaAnimate)];
+    n_skew=[0 -n(3) n(2) ; n(3) 0 -n(1) ; -n(2) n(1) 0 ];
+    R=(n*n'+cos(deltaTemp)*(eye(3)-n*n')+sin(deltaTemp)*n_skew);
+
+    tempPointFront=pointFront-[20;0;5];
+    tempPointFront=R*tempPointFront;
+    steerPointFront=tempPointFront+[20;0;5];
+
+    n=[-1;0;0];
+    n_skew=[0 -n(3) n(2) ; n(3) 0 -n(1) ; -n(2) n(1) 0 ];
+    R=(n*n'+cos(phiTemp)*(eye(3)-n*n')+sin(phiTemp)*n_skew);
+
+    leanPointFront=R*steerPointFront;
+    leanPointRear=R*pointRear;
+
+    n=[0;0;1];
+    n_skew=[0 -n(3) n(2) ; n(3) 0 -n(1) ; -n(2) n(1) 0 ];
+    R=(n*n'+cos(psiTemp)*(eye(3)-n*n')+sin(psiTemp)*n_skew);
+
+    yawPointFront=R*steerPointFront;
+    yawPointRear=R*pointRear; 
+
+    finalPointFront=yawPointFront/20+[xTemp;yTemp;0];   
+    finalPointRear=yawPointRear/20+[xTemp;yTemp;0];  
+
+    rearPlot.XData=finalPointRear(1,:);
+    rearPlot.YData=finalPointRear(2,:);
+    rearPlot.ZData=finalPointRear(3,:);
+    frontPlot.XData=finalPointFront(1,:);
+    frontPlot.YData=finalPointFront(2,:);
+    frontPlot.ZData=finalPointFront(3,:);
+    % axis([xTemp-2 xTemp+2 yTemp-2 yTemp+2 0 1])
+    % ax.ZLim = [0 1];
+    ax.YLim = [yTemp-2 yTemp+2];
+    ax.XLim = [xTemp-2 xTemp+2];
+
+    trajectoryRearX(end+1)=xTemp;
+    trajectoryRearY(end+1)=yTemp;
+
+    [minZ,Index]=min(finalPointFront(3,:));
+
+    trajectoryFrontX(end+1)=finalPointFront(1,Index);
+    trajectoryFrontY(end+1)=finalPointFront(2,Index);
+
+    trajectoryRearPlot.XData=trajectoryRearX;
+    trajectoryRearPlot.YData=trajectoryRearY;
+
+    trajectoryFrontPlot.XData=trajectoryFrontX;
+    trajectoryFrontPlot.YData=trajectoryFrontY;
+    
+    startTime=1;
+    if length(allResultArray)>5001
+        startTime=length(allResultArray)-5000;
+    end
+    phiPlot.XData=allTimeArray(startTime:end);
+    phiPlot.YData=allResultArray(startTime:end,1);
+    deltaPlot.XData=allTimeArray(startTime:end);
+    deltaPlot.YData=allResultArray(startTime:end,3);
+    vPlot.XData=allTimeArray(startTime:end);
+    vPlot.YData=allResultArray(startTime:end,4);
+    xPlot.XData=allTimeArray(startTime:end);
+    xPlot.YData=allResultArray(startTime:end,5);
+    yPlot.XData=allTimeArray(startTime:end);
+    yPlot.YData=allResultArray(startTime:end,6);
+    psiPlot.XData=allTimeArray(startTime:end);
+    psiPlot.YData=allResultArray(startTime:end,7);
+    drawnow;
+
+end
+
+function d = point_to_line(pt, v1, v2)
+    a = v1 - v2;
+    b = pt - v2;
+    d = norm(cross(a,b)) / norm(a);
+end
+
+function [myPhiSetting,myVSetting,newTrainingPosition] = generateCommand(IC,trainingTrajectory,trainingTrajectoryArrayLength,currentTrainingPosition);
+
+    % phi = IC(1);
+    % phi_dot = IC(2);
+    % delta = IC(3); 
+    % v = IC(4);
+    x = IC(5);
+    y = IC(6);
+    psi = IC(7);
+
+    % l = 1.02;
+    % x = x+l*cos(psi);
+    % y = y+l*sin(psi);
+
+    wayPointRelativeBicycleAngle = atan2(trainingTrajectory(currentTrainingPosition,2)-y,trainingTrajectory(currentTrainingPosition,1)-x);
+    % myPhiSetting = (wrapToPi(wayPointRelativeBicycleAngle-psi)+sin(psi+currentTrainingPosition))/5;
+    myPhiSetting = wrapToPi(wayPointRelativeBicycleAngle-psi)/3;
+
+    if myPhiSetting > 0.3
+        myPhiSetting = 0.3;
+    end
+
+    if myPhiSetting < -0.3
+        myPhiSetting = -0.3;
+    end
+
+    tempD = ((trainingTrajectory(currentTrainingPosition,2)-y)^2+(trainingTrajectory(currentTrainingPosition,1)-x)^2)^0.5;
+
+    newTrainingPosition = currentTrainingPosition;
+    if tempD < 1.5
+        newTrainingPosition = currentTrainingPosition + 10;
+    end
+
+    % myVSetting = 2+0.5*sin((newTrainingPosition+psi)/180*pi);% let it move smoothly
+    myVSetting = 2;
+
+end
+
+function [carDistance,headingDifference,forwardPointHeadingDifference,phi,phi_dot,delta,v] = stateSimplify(IC,myTrajectory,myTrajectoryArrayLength)
+    % Need to know something about front road. It can be heading difference or the position reletive to current position.
+    % I choose to use the heading difference now.
+
+    phi = IC(1);
+    phi_dot = IC(2);
+    delta = IC(3); % I think this will change rapidlly, so didn't put it in state
+    v = IC(4);
+    x = IC(5);
+    y = IC(6);
+    psi = IC(7);
+
+    % l = 1.02;
+    % x = x+l*cos(psi);
+    % y = y+l*sin(psi);
+
+    % CurrentPhiSetting is also important
+
+    minDistance = 100;
+    minDistanceIndex = 0;
+    for i = 1:myTrajectoryArrayLength-10
+        tempDistance = ((myTrajectory(i,1)-x)^2+(myTrajectory(i,2)-y)^2)^0.5;
+        if tempDistance < minDistance
+            minDistance = tempDistance;
+            minDistanceIndex = i;
+        end
+    end
+
+    i = minDistanceIndex;
+
+    % Distance to line
+    carDistance = point_to_line([x,y,0], [myTrajectory(i,1),myTrajectory(i,2),0], [myTrajectory(i+1,1),myTrajectory(i+1,2),0]);
+
+    % which side of the line
+    % carDistance = minDistance; % This is wrong. Need positive and negetive
+    % Ax+By+C=0
+    A = myTrajectory(i+1,2)-myTrajectory(i,2);
+    B = myTrajectory(i,1)-myTrajectory(i+1,1);
+    C = myTrajectory(i+1,1)*myTrajectory(i,2)-myTrajectory(i,1)*myTrajectory(i+1,2);
+    whichSide = A*x+B*y+C;
+    
+    if whichSide < 0
+        carDistance = -carDistance;
+    end
+    headingOfPointOnTrajectory = atan2(myTrajectory(i+1,2)-myTrajectory(i,2),myTrajectory(i+1,1)-myTrajectory(i,1));
+    headingDifference = wrapToPi(psi-headingOfPointOnTrajectory);
+    headingOfForwardPointOnTrajectory = atan2(myTrajectory(i+10,2)-myTrajectory(i+9,2),myTrajectory(i+10,1)-myTrajectory(i+9,1));
+    forwardPointHeadingDifference = wrapToPi(psi-headingOfForwardPointOnTrajectory);
+
+end
+
+
+function [myTrajectory,trajectoryArrayLength] = generateTrajectory_StraightLine(totalDistance,trajectoryInterval)
+
+i = 0:trajectoryInterval:totalDistance;
+trajectoryArrayLength = length(i);
+myTrajectory = [i;i*0]';
+% myTrajectory = [i;sin(i/5)]';
+
+
+end
+
+function [myTrajectory,trajectoryArrayLength] = generateTrajectory_Sin(totalDistance,trajectoryInterval)
+
+i = 0:trajectoryInterval:totalDistance;
+trajectoryArrayLength = length(i);
+% myTrajectory = [i;i*0]';
+myTrajectory = [i;sin(i/5)]';
+
+
+end
+
+function [myTrajectory,trajectoryArrayLength] = generateTrajectory_Circle(totalDistance,trajectoryInterval)
+
+i = 0:trajectoryInterval:totalDistance;
+trajectoryArrayLength = length(i);
+% myTrajectory = [i;i*0]';
+myTrajectory = [cos(i/5);sin(i/5)]'*20;
+
+
+end
+
+
+%% RHS
+function derivative = RHS_Bicycle(time,variable,mParameter)
+
+g = mParameter.g; %acceleration due to gravity
+l = mParameter.l; %length of wheel base 
+b = mParameter.b; %distance from rear wheel to COM projected onto ground
+h = mParameter.h; %height of COM in point mass model
+m = mParameter.m;
+I_1 = mParameter.I_1;
+I_2 = mParameter.I_2;
+I_3 = mParameter.I_3;
+zeta = mParameter.zeta;
+
+% C = mParameter.C;
+
+v_star = mParameter.v_star;
+phi_star = mParameter.phi_star;
+delta_star = phi_star*g*l/variable(4)^2/cos(zeta);
+
+phi = variable(1);
+phi_dot = variable(2);
+delta = variable(3);
+v = variable(4);
+
+% X = [phi-phi_star,phi_dot,delta-delta_star,v-v_star]';
+
+x = variable(5);
+y = variable(6);
+psi = variable(7);
+
+x_dot = v*cos(psi);
+y_dot = v*sin(psi);
+psi_dot = (v*sin(delta)*cos(zeta))/(l*(cos(delta)*cos(phi) - sin(delta)*sin(phi)*sin(zeta)));
+
+phi_hat=phi_star;
+phi_dot_hat=0;
+phi_ddot_hat=0;
+lambda=100;
+k_phi=-30;
+d_phi=1;
+
+% s=(phi_dot_hat-phi_dot)+lambda*(phi_hat-phi)
+
+% s_dot=(phi_ddot_hat-phi_ddot)+lambda*(phi_dot_hat-phi_dot)
+
+v_dot = -(v-v_star);
+% u=- (k_phi*(phi_dot - phi_dot_hat + lambda*(phi - phi_hat)))/(d_phi + abs(phi_dot - phi_dot_hat + lambda*(phi - phi_hat))) - ((h*l + (I_1*l)/(h*m))*((delta*cos(zeta)*v^2)/(h*l + (I_1*l)/(h*m)) + phi_ddot_hat - lambda*(phi_dot - phi_dot_hat) - (g*l*phi)/(h*l + (I_1*l)/(h*m)) + (b*delta*v_dot*cos(zeta))/(h*l + (I_1*l)/(h*m))))/(b*v*cos(zeta))
+
+u=- ((phi_ddot_hat - lambda*(phi_dot - phi_dot_hat) + ((h*m*v^2*cos(phi)*sin(delta)*cos(zeta))/(l*cos(delta)*cos(phi) - l*sin(delta)*sin(phi)*sin(zeta)) - g*h*m*sin(phi) - (I_2*v^2*cos(phi)*sin(delta)^2*cos(zeta)^2*sin(phi))/(l^2*cos(delta)^2*cos(phi)^2 + l^2*sin(delta)^2*sin(phi)^2*sin(zeta)^2 - 2*l^2*cos(delta)*cos(phi)*sin(delta)*sin(phi)*sin(zeta)) + (I_3*v^2*cos(phi)*sin(delta)^2*cos(zeta)^2*sin(phi))/(l^2*cos(delta)^2*cos(phi)^2 + l^2*sin(delta)^2*sin(phi)^2*sin(zeta)^2 - 2*l^2*cos(delta)*cos(phi)*sin(delta)*sin(phi)*sin(zeta)) - (h^2*m*v^2*cos(phi)*sin(delta)^2*cos(zeta)^2*sin(phi))/(l^2*cos(delta)^2*cos(phi)^2 + l^2*sin(delta)^2*sin(phi)^2*sin(zeta)^2 - 2*l^2*cos(delta)*cos(phi)*sin(delta)*sin(phi)*sin(zeta)) + (b*h*m*v_dot*cos(delta)*cos(phi)^2*sin(delta)*cos(zeta))/(l*cos(delta)^2*cos(phi)^2 + l*sin(delta)^2*sin(phi)^2*sin(zeta)^2 - 2*l*cos(delta)*cos(phi)*sin(delta)*sin(phi)*sin(zeta)) + (b*h*m*phi_dot*v*cos(phi)^2*sin(delta)^2*cos(zeta)*sin(zeta))/(l*cos(delta)^2*cos(phi)^2 + l*sin(delta)^2*sin(phi)^2*sin(zeta)^2 - 2*l*cos(delta)*cos(phi)*sin(delta)*sin(phi)*sin(zeta)) - (b*h*m*v_dot*cos(phi)*sin(delta)^2*cos(zeta)*sin(phi)*sin(zeta))/(l*cos(delta)^2*cos(phi)^2 + l*sin(delta)^2*sin(phi)^2*sin(zeta)^2 - 2*l*cos(delta)*cos(phi)*sin(delta)*sin(phi)*sin(zeta)) + (b*h*m*phi_dot*v*cos(delta)*cos(phi)*sin(delta)*cos(zeta)*sin(phi))/(l*cos(delta)^2*cos(phi)^2 + l*sin(delta)^2*sin(phi)^2*sin(zeta)^2 - 2*l*cos(delta)*cos(phi)*sin(delta)*sin(phi)*sin(zeta)))/(m*h^2*cos(phi)^2 + m*h^2*sin(phi)^2 + I_1))*(m*h^2*cos(phi)^2 + m*h^2*sin(phi)^2 + I_1))/((b*h*m*v*cos(delta)^2*cos(phi)^2*cos(zeta))/(l*cos(delta)^2*cos(phi)^2 + l*sin(delta)^2*sin(phi)^2*sin(zeta)^2 - 2*l*cos(delta)*cos(phi)*sin(delta)*sin(phi)*sin(zeta)) + (b*h*m*v*cos(phi)^2*sin(delta)^2*cos(zeta))/(l*cos(delta)^2*cos(phi)^2 + l*sin(delta)^2*sin(phi)^2*sin(zeta)^2 - 2*l*cos(delta)*cos(phi)*sin(delta)*sin(phi)*sin(zeta))) - (k_phi*(phi_dot - phi_dot_hat + lambda*(phi - phi_hat)))/(d_phi + abs(phi_dot - phi_dot_hat + lambda*(phi - phi_hat)));
+delta_dot = u;
+
+
+phi_ddot = -((h*m*v^2*cos(phi)*sin(delta)*cos(zeta))/(l*cos(delta)*cos(phi) - l*sin(delta)*sin(phi)*sin(zeta)) - g*h*m*sin(phi) - (I_2*v^2*cos(phi)*sin(delta)^2*cos(zeta)^2*sin(phi))/(l^2*cos(delta)^2*cos(phi)^2 + l^2*sin(delta)^2*sin(phi)^2*sin(zeta)^2 - 2*l^2*cos(delta)*cos(phi)*sin(delta)*sin(phi)*sin(zeta)) + (I_3*v^2*cos(phi)*sin(delta)^2*cos(zeta)^2*sin(phi))/(l^2*cos(delta)^2*cos(phi)^2 + l^2*sin(delta)^2*sin(phi)^2*sin(zeta)^2 - 2*l^2*cos(delta)*cos(phi)*sin(delta)*sin(phi)*sin(zeta)) - (h^2*m*v^2*cos(phi)*sin(delta)^2*cos(zeta)^2*sin(phi))/(l^2*cos(delta)^2*cos(phi)^2 + l^2*sin(delta)^2*sin(phi)^2*sin(zeta)^2 - 2*l^2*cos(delta)*cos(phi)*sin(delta)*sin(phi)*sin(zeta)) + (b*delta_dot*h*m*v*cos(delta)^2*cos(phi)^2*cos(zeta))/(l*cos(delta)^2*cos(phi)^2 + l*sin(delta)^2*sin(phi)^2*sin(zeta)^2 - 2*l*cos(delta)*cos(phi)*sin(delta)*sin(phi)*sin(zeta)) + (b*delta_dot*h*m*v*cos(phi)^2*sin(delta)^2*cos(zeta))/(l*cos(delta)^2*cos(phi)^2 + l*sin(delta)^2*sin(phi)^2*sin(zeta)^2 - 2*l*cos(delta)*cos(phi)*sin(delta)*sin(phi)*sin(zeta)) + (b*h*m*v_dot*cos(delta)*cos(phi)^2*sin(delta)*cos(zeta))/(l*cos(delta)^2*cos(phi)^2 + l*sin(delta)^2*sin(phi)^2*sin(zeta)^2 - 2*l*cos(delta)*cos(phi)*sin(delta)*sin(phi)*sin(zeta)) + (b*h*m*phi_dot*v*cos(phi)^2*sin(delta)^2*cos(zeta)*sin(zeta))/(l*cos(delta)^2*cos(phi)^2 + l*sin(delta)^2*sin(phi)^2*sin(zeta)^2 - 2*l*cos(delta)*cos(phi)*sin(delta)*sin(phi)*sin(zeta)) - (b*h*m*v_dot*cos(phi)*sin(delta)^2*cos(zeta)*sin(phi)*sin(zeta))/(l*cos(delta)^2*cos(phi)^2 + l*sin(delta)^2*sin(phi)^2*sin(zeta)^2 - 2*l*cos(delta)*cos(phi)*sin(delta)*sin(phi)*sin(zeta)) + (b*h*m*phi_dot*v*cos(delta)*cos(phi)*sin(delta)*cos(zeta)*sin(phi))/(l*cos(delta)^2*cos(phi)^2 + l*sin(delta)^2*sin(phi)^2*sin(zeta)^2 - 2*l*cos(delta)*cos(phi)*sin(delta)*sin(phi)*sin(zeta)))/(m*h^2*cos(phi)^2 + m*h^2*sin(phi)^2 + I_1);
+ 
+% phi_ddot = (g*l*phi)/(h*l + (I_1*l)/(h*m)) - (delta*v^2*cos(zeta))/(h*l + (I_1*l)/(h*m)) - (b*delta_dot*v*cos(zeta))/(h*l + (I_1*l)/(h*m)) - (b*delta*v_dot*cos(zeta))/(h*l + (I_1*l)/(h*m));
+
+derivative = [phi_dot;phi_ddot;delta_dot;v_dot;x_dot;y_dot;psi_dot];
+
+end
+
+function myKeyPress(src,data)
+%   src
+    switch data.Key
+        case 'downarrow'
+            src.UserData.myV = -1;
+        case 'uparrow'
+            src.UserData.myV = 1;
+        case 'leftarrow'
+            src.UserData.myPhi = 1;    
+        case 'rightarrow'
+            src.UserData.myPhi = -1;         
+    end
+end
+
+function myKeyRelease(src,data)
+%   src
+    switch data.Key
+        case 'downarrow'
+            src.UserData.myV = 0;
+        case 'uparrow'
+            src.UserData.myV = 0;
+        case 'leftarrow'
+            src.UserData.myPhi = 0;    
+        case 'rightarrow'
+            src.UserData.myPhi = 0;                         
+    end
+end
+
+
+function C = getCusingLQR(phi,v)
+
+g = 9.81; %acceleration due to gravity
+l = 1.02; %length of wheel base 
+b = 0.33; %distance from rear wheel to COM projected onto ground
+h = 0.516; %height of COM in point mass model
+m = 10;
+I_1 = m*(l/2)^2/4;
+zeta = 10/180*pi;
+
+%% Norminal value
+% phi=0;
+phi_dot=0;
+% delta=0;
+% v=2;
+
+delta = phi*g*l/v^2/cos(zeta);
+
+delta_dot=0;
+v_dot=0;
+
+%% SS LQR
+
+A=[                           0, 1,                                                                                   0,                                                                                             0;...
+ (g*l)/(h*l + (I_1*l)/(h*m)), 0, - (v^2*cos(zeta))/(h*l + (I_1*l)/(h*m)) - (b*v_dot*cos(zeta))/(h*l + (I_1*l)/(h*m)), - (b*delta_dot*cos(zeta))/(h*l + (I_1*l)/(h*m)) - (2*delta*v*cos(zeta))/(h*l + (I_1*l)/(h*m));...
+                           0, 0,                                                                                   0,                                                                                             0;...
+                           0, 0,                                                                                   0,                                                                                             0];
+
+B=[                                      0,                                          0;...
+ -(b*v*cos(zeta))/(h*l + (I_1*l)/(h*m)), -(b*delta*cos(zeta))/(h*l + (I_1*l)/(h*m));...
+                                      1,                                          0;...
+                                      0,                                          1];
+Q=eye(4);
+R=eye(2);
+                                  
+[S,L,C] = care(A,B,Q,R);
+
+end
